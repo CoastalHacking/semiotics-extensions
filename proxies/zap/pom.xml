@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>semiotics.extensions.proxies.zap</artifactId>
+  <parent>
+    <groupId>us.coastalhacking</groupId>
+    <artifactId>semiotics.extensions.proxies.parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <repositories>
+    <repository>
+      <id>repo</id>
+      <url>file://${project.basedir}/repo</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.owasp.zap</groupId>
+      <artifactId>zap-api</artifactId>
+      <version>2.4.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>us.coastalhacking</groupId>
+      <artifactId>us.coastalhacking.semiotics.extensions.dependencies.osgi</artifactId>
+      <classifier>repackaged</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+            <!-- https://github.com/zaproxy/zaproxy/wiki/ZapAddOns
+            <id>-<status>-<version>.zap
+            <id> is a unique identifier which should match the package the add-on is implemented in
+            <status> is an indication of how mature the add-on is: alpha, beta or release
+            <version> is an integer which increments with each new released version
+             -->
+          <finalName>semiotics-alpha-1.zap</finalName>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.4.3</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <!--  http://stackoverflow.com/a/6743609  -->
+            <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

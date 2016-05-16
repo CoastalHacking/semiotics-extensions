@@ -1,0 +1,12 @@
+<zapaddon>
+	<name>ZAP tutorial</name>
+	<version>1</version>
+	<semver>0.0.1</semver>
+	<description>Super long ZAP tutorial description</description>
+	<author>Jon Passki</author>
+	<url>https://github.com/jonpasski/zap-tutorial</url>
+	<extensions>
+		<extension>us.coastalhacking.semiotics.extensions.proxies.zap.SemioticsExtension</extension>
+	</extensions>
+	<not-before-version>2.4.0</not-before-version>
+</zapaddon>
