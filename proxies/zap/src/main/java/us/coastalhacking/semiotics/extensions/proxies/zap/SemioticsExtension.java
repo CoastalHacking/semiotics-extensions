@@ -60,4 +60,9 @@ public class SemioticsExtension extends ExtensionAdaptor  {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public boolean canUnload() {
+		return true;
+	}
 }

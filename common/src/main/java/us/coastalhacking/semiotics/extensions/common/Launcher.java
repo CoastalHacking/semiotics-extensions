@@ -45,11 +45,12 @@ public class Launcher {
 			framework = frameworkFactory.newFramework(config);
 			try {
 				// TODO log
-				System.out.println("Starting OSGi...");
+				System.out.println("Starting OSGi framework...");
 				framework.start();
 				System.out.println(String.format("OSGi framework state: %s", framework.getState()));
 			} catch (BundleException e) {
 				// TODO Auto-generated catch block
+				System.out.println("Error starting OSGi framework");
 				e.printStackTrace();
 				throw new LauncherException(e);
 			}
@@ -61,18 +62,35 @@ public class Launcher {
 	public void startBundles() throws LauncherException {
 		if (framework != null) {
 			BundleContext context = framework.getBundleContext();
+			Bundle[] bundles = context.getBundles();
+			System.out.println("Uninstalling the following installed bundles: ");
+			for (Bundle bundle : bundles) {
+				System.out.print(String.format("\t%s ", bundle));
+				try {
+					bundle.uninstall();
+					System.out.println("uninstalled");
+				} catch (BundleException e) {
+					System.out.println("not uninstalled");
+				}
+			}
 			List<Bundle> installedBundles = new LinkedList<Bundle>();
 
 			for (String jar : jarsInJar()) {
+				Bundle bundle;
 				try {
-					Bundle bundle = context.installBundle(jar);
-					System.out.println(String.format("Installing bundle: %s", bundle));
+					bundle = context.getBundle(jar);
+					if (bundle == null) {
+						System.out.println(String.format("Installing bundle: %s", jar));
+						bundle = context.installBundle(jar);
+					}
+					System.out.println(String.format("Adding installed bundle to be started: %s", bundle));
 					installedBundles.add(bundle);
 				} catch (BundleException e) {
+					System.out.println(String.format("Could not install bundle: %s", jar));
 					// TODO : handle better
 					// A bundle may have been already installed
 					// via a transitive load
-					// e.printStackTrace();
+					e.printStackTrace();
 					// throw new LauncherException(e);
 				}
 			}
@@ -109,11 +127,12 @@ public class Launcher {
 	public void stopFramework() throws LauncherException {
 		if (framework != null) {
 			try {
+				System.out.println("Stopping OSGi framework...");
 				framework.stop();
 			} catch (BundleException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				throw new LauncherException(e);
+				// throw new LauncherException(e);
 			}
 		}
 	}

@@ -33,8 +33,18 @@
               <outputDirectory>${project.build.directory}/p2-dependencies</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>true</overWriteSnapshots>
-              <!-- included by extension -->
-              <excludeArtifactIds>org.eclipse.osgi, org.eclipse.core.runtime</excludeArtifactIds>
+              <!-- The below are "optional" for EMF or
+              transitive dependencies based on "optional" -->
+              <excludeArtifactIds>
+                org.eclipse.osgi,
+                org.eclipse.core.runtime,
+                org.eclipse.core.contenttype,
+                org.eclipse.equinox.preferences,
+                org.eclipse.equinox.registry,
+                org.eclipse.equinox.common,
+                org.eclipse.core.jobs,
+                org.eclipse.equinox.app
+              </excludeArtifactIds>
             </configuration>
           </execution>
         </executions>
