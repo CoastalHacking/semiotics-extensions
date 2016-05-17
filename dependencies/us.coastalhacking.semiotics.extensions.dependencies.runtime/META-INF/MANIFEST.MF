@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Semiotic OSGi Runtime Bundles
+Bundle-SymbolicName: us.coastalhacking.semiotics.extensions.dependencies.runtime
+Bundle-Version: 0.0.1.qualifier
+Bundle-Vendor: Coastal Hacking
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.eclipse.emf.ecore

@@ -27,8 +27,13 @@
       <classifier>repackaged</classifier>
     </dependency>
     <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <groupId>us.coastalhacking</groupId>
+      <artifactId>us.coastalhacking.semiotics.extensions.dependencies.runtime</artifactId>
+      <classifier>repackaged</classifier>
+    </dependency>
+    <dependency>
+      <groupId>us.coastalhacking</groupId>
+      <artifactId>semiotics.extensions.common</artifactId>
     </dependency>
   </dependencies>
   <build>

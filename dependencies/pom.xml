@@ -13,6 +13,7 @@
 
   <modules>
     <module>us.coastalhacking.semiotics.extensions.dependencies.osgi</module>
+    <module>us.coastalhacking.semiotics.extensions.dependencies.runtime</module>
   </modules>
 
   <properties>
