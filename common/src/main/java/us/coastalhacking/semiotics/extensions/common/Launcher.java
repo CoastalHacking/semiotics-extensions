@@ -39,9 +39,9 @@ public class Launcher {
 		FrameworkFactory frameworkFactory = getFrameworkFactory();
 		if (frameworkFactory != null) {
 			Map<String, String> config = new HashMap<String, String>();
-			// TODO : add in dependencies jar
 			config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, equinox());
 			config.put(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
+			config.put("osgi.console", ""); // use stdin for console in equinox
 			framework = frameworkFactory.newFramework(config);
 			try {
 				// TODO log
@@ -63,26 +63,25 @@ public class Launcher {
 		if (framework != null) {
 			BundleContext context = framework.getBundleContext();
 			Bundle[] bundles = context.getBundles();
-			System.out.println("Uninstalling the following installed bundles: ");
-			for (Bundle bundle : bundles) {
-				System.out.print(String.format("\t%s ", bundle));
-				try {
-					bundle.uninstall();
-					System.out.println("uninstalled");
-				} catch (BundleException e) {
-					System.out.println("not uninstalled");
-				}
-			}
+
 			List<Bundle> installedBundles = new LinkedList<Bundle>();
+			Map<String, Bundle> installedBundleLocations = new HashMap<String, Bundle>();
+			for (Bundle bundle : bundles) {
+				installedBundleLocations.put(bundle.getLocation(), bundle);
+			}
 
 			for (String jar : jarsInJar()) {
+				// May have been previously installed
+				// Still needs to be started
+				if (installedBundleLocations.keySet().contains(jar)) {
+					installedBundles.add(installedBundleLocations.get(jar));
+					continue;
+				}
+
 				Bundle bundle;
 				try {
-					bundle = context.getBundle(jar);
-					if (bundle == null) {
-						System.out.println(String.format("Installing bundle: %s", jar));
-						bundle = context.installBundle(jar);
-					}
+					System.out.println(String.format("Installing bundle: %s", jar));
+					bundle = context.installBundle(jar);
 					System.out.println(String.format("Adding installed bundle to be started: %s", bundle));
 					installedBundles.add(bundle);
 				} catch (BundleException e) {
@@ -162,7 +161,7 @@ public class Launcher {
 		// http://stackoverflow.com/a/15331935
 		JarURLConnection urlcon;
 		try {
-			// TODO find a better home for this re-cast
+			// TODO hack: find a better home for this re-cast
 			if (location.getProtocol().equals("file")) {
 				location = new URL(String.format("jar:%s!/", location.toString()));
 			}
@@ -186,8 +185,12 @@ public class Launcher {
 	}
 
 	private static String equinox() {
-		// Export-Package from org.eclipse.osgi
-		// and org.eclipse.osgi
-		return "org.eclipse.core.runtime.adaptor;x-friends:=\"org.eclipse.core.runtime\",org.eclipse.core.runtime.internal.adaptor;x-internal:=true,org.eclipse.equinox.log;version=\"1.0\",org.eclipse.osgi.container;version=\"1.0\",org.eclipse.osgi.container.builders;version=\"1.0\",org.eclipse.osgi.container.namespaces;version=\"1.0\",org.eclipse.osgi.framework.console;version=\"1.1\",org.eclipse.osgi.framework.eventmgr;version=\"1.2\",org.eclipse.osgi.framework.internal.reliablefile;x-internal:=true,org.eclipse.osgi.framework.log;version=\"1.1\",org.eclipse.osgi.framework.util;x-internal:=true,org.eclipse.osgi.internal.debug;x-internal:=true,org.eclipse.osgi.internal.framework;x-internal:=true,org.eclipse.osgi.internal.hookregistry;x-friends:=\"org.eclipse.osgi.tests\",org.eclipse.osgi.internal.loader;x-internal:=true,org.eclipse.osgi.internal.loader.buddy;x-internal:=true,org.eclipse.osgi.internal.loader.classpath;x-internal:=true,org.eclipse.osgi.internal.loader.sources;x-internal:=true,org.eclipse.osgi.internal.location;x-internal:=true,org.eclipse.osgi.internal.messages;x-internal:=true,org.eclipse.osgi.internal.provisional.service.security;version=\"1.0.0\";x-friends:=\"org.eclipse.equinox.security.ui\",org.eclipse.osgi.internal.provisional.verifier;x-friends:=\"org.eclipse.update.core,org.eclipse.ui.workbench,org.eclipse.equinox.p2.artifact.repository\",org.eclipse.osgi.internal.service.security;x-friends:=\"org.eclipse.equinox.security.ui\",org.eclipse.osgi.internal.serviceregistry;x-internal:=true,org.eclipse.osgi.internal.signedcontent;x-internal:=true,org.eclipse.osgi.internal.url;x-internal:=true,org.eclipse.osgi.launch;version=\"1.0\",org.eclipse.osgi.report.resolution;version=\"1.0\",org.eclipse.osgi.service.datalocation;version=\"1.3\",org.eclipse.osgi.service.debug;version=\"1.2\",org.eclipse.osgi.service.environment;version=\"1.3\",org.eclipse.osgi.service.localization;version=\"1.1\",org.eclipse.osgi.service.pluginconversion;version=\"1.0\",org.eclipse.osgi.service.resolver;version=\"1.6\",org.eclipse.osgi.service.runnable;version=\"1.1\",org.eclipse.osgi.service.security;version=\"1.0\",org.eclipse.osgi.service.urlconversion;version=\"1.0\",org.eclipse.osgi.signedcontent;version=\"1.0\",org.eclipse.osgi.storage;x-friends:=\"org.eclipse.osgi.tests\",org.eclipse.osgi.storage.bundlefile;x-internal:=true,org.eclipse.osgi.storage.url.reference;x-internal:=true,org.eclipse.osgi.storagemanager;version=\"1.0\",org.eclipse.osgi.util;version=\"1.1\",org.osgi.dto;version=\"1.0\",org.osgi.framework;version=\"1.8\",org.osgi.framework.dto;version=\"1.8\",org.osgi.framework.hooks.bundle;version=\"1.1\",org.osgi.framework.hooks.resolver;version=\"1.0\",org.osgi.framework.hooks.service;version=\"1.1\",org.osgi.framework.hooks.weaving;version=\"1.1\",org.osgi.framework.launch;version=\"1.2\",org.osgi.framework.namespace;version=\"1.1\",org.osgi.framework.startlevel;version=\"1.0\",org.osgi.framework.startlevel.dto;version=\"1.0\",org.osgi.framework.wiring;version=\"1.2\",org.osgi.framework.wiring.dto;version=\"1.2\",org.osgi.resource;version=\"1.0\",org.osgi.resource.dto;version=\"1.0\",org.osgi.service.condpermadmin;version=\"1.1.1\",org.osgi.service.log;version=\"1.3\",org.osgi.service.packageadmin;version=\"1.2\",org.osgi.service.permissionadmin;version=\"1.2\",org.osgi.service.resolver;version=\"1.0.1\",org.osgi.service.startlevel;version=\"1.1\",org.osgi.service.url;version=\"1.0\",org.osgi.util.tracker;version=\"1.5.1\"";
+		// TODO return this via the OSGi dependency versus hardcoded here
+		// Taken from Export-Package from org.eclipse.osgi
+		// We need to export the OSGi dependencies aren't since they're not on
+		// the system classpath. That is, the
+		// 'org.osgi.framework.system.packages'
+		// property won't have the OSGi packages exported.
+		return "org.eclipse.core.runtime.adaptor;x-friends:=\"org.eclipse.core.runtime\",org.eclipse.core.runtime.internal.adaptor;x-internal:=true,org.eclipse.equinox.log;version=\"1.0\",org.eclipse.osgi.container;version=\"1.0\",org.eclipse.osgi.container.builders;version=\"1.0\",org.eclipse.osgi.container.namespaces;version=\"1.0\",org.eclipse.osgi.framework.console;version=\"1.1\",org.eclipse.osgi.framework.eventmgr;version=\"1.2\",org.eclipse.osgi.framework.internal.reliablefile;x-internal:=true,org.eclipse.osgi.framework.log;version=\"1.1\",org.eclipse.osgi.framework.util;x-internal:=true,org.eclipse.osgi.internal.debug;x-internal:=true,org.eclipse.osgi.internal.framework;x-internal:=true,org.eclipse.osgi.internal.hookregistry;x-friends:=\"org.eclipse.osgi.tests\",org.eclipse.osgi.internal.loader;x-internal:=true,org.eclipse.osgi.internal.loader.buddy;x-internal:=true,org.eclipse.osgi.internal.loader.classpath;x-internal:=true,org.eclipse.osgi.internal.loader.sources;x-internal:=true,org.eclipse.osgi.internal.location;x-internal:=true,org.eclipse.osgi.internal.messages;x-internal:=true,org.eclipse.osgi.internal.provisional.service.security;version=\"1.0.0\";x-friends:=\"org.eclipse.equinox.security.ui\",org.eclipse.osgi.internal.provisional.verifier;x-friends:=\"org.eclipse.update.core,org.eclipse.ui.workbench,org.eclipse.equinox.p2.artifact.repository\",org.eclipse.osgi.internal.service.security;x-friends:=\"org.eclipse.equinox.security.ui\",org.eclipse.osgi.internal.serviceregistry;x-internal:=true,org.eclipse.osgi.internal.signedcontent;x-internal:=true,org.eclipse.osgi.internal.url;x-internal:=true,org.eclipse.osgi.storage.url,org.eclipse.osgi.storage.url.bundleresource,org.eclipse.osgi.storage.url.bundleentry,org.eclipse.osgi.storage.url.bundleresource,org.eclipse.osgi.launch;version=\"1.0\",org.eclipse.osgi.report.resolution;version=\"1.0\",org.eclipse.osgi.service.datalocation;version=\"1.3\",org.eclipse.osgi.service.debug;version=\"1.2\",org.eclipse.osgi.service.environment;version=\"1.3\",org.eclipse.osgi.service.localization;version=\"1.1\",org.eclipse.osgi.service.pluginconversion;version=\"1.0\",org.eclipse.osgi.service.resolver;version=\"1.6\",org.eclipse.osgi.service.runnable;version=\"1.1\",org.eclipse.osgi.service.security;version=\"1.0\",org.eclipse.osgi.service.urlconversion;version=\"1.0\",org.eclipse.osgi.signedcontent;version=\"1.0\",org.eclipse.osgi.storage;x-friends:=\"org.eclipse.osgi.tests\",org.eclipse.osgi.storage.bundlefile;x-internal:=true,org.eclipse.osgi.storage.url.reference;x-internal:=true,org.eclipse.osgi.storagemanager;version=\"1.0\",org.eclipse.osgi.util;version=\"1.1\",org.osgi.dto;version=\"1.0\",org.osgi.framework;version=\"1.8\",org.osgi.framework.dto;version=\"1.8\",org.osgi.framework.hooks.bundle;version=\"1.1\",org.osgi.framework.hooks.resolver;version=\"1.0\",org.osgi.framework.hooks.service;version=\"1.1\",org.osgi.framework.hooks.weaving;version=\"1.1\",org.osgi.framework.launch;version=\"1.2\",org.osgi.framework.namespace;version=\"1.1\",org.osgi.framework.startlevel;version=\"1.0\",org.osgi.framework.startlevel.dto;version=\"1.0\",org.osgi.framework.wiring;version=\"1.2\",org.osgi.framework.wiring.dto;version=\"1.2\",org.osgi.resource;version=\"1.0\",org.osgi.resource.dto;version=\"1.0\",org.osgi.service.condpermadmin;version=\"1.1.1\",org.osgi.service.log;version=\"1.3\",org.osgi.service.packageadmin;version=\"1.2\",org.osgi.service.permissionadmin;version=\"1.2\",org.osgi.service.resolver;version=\"1.0.1\",org.osgi.service.startlevel;version=\"1.1\",org.osgi.service.url;version=\"1.0\",org.osgi.util.tracker;version=\"1.5.1\"";
 	}
 }
